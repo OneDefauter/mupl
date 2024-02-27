@@ -45,7 +45,7 @@ def download_and_execute():
                 if line.startswith('__version__'):
                     __version__ = line.split('=')[1].strip().strip('"\'')
     else:
-        __version__ = "2.0.1"
+        __version__ = "2.0.1" # Initial version
 
     remote_release = requests.get(f"https://api.github.com/repos/{namespace}/mupl/releases/latest")
     local_version = version.parse(__version__)
