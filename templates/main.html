@@ -1,134 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MangaDex</title>
+        <link rel="icon" href="https://mangadex.org/img/avatar.png" type="image/png">
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    </head>
+    <body>
+        <div id="videoContainer">
+            <canvas id="videoCanvas" autoplay muted loop></canvas>
+        </div>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MangaDex</title>
-  <link rel="icon" href="https://mangadex.org/img/avatar.png" type="image/png">
-  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-</head>
+        <!-- Frame 1 -->
+        <div id="frame1">
+            <button onclick="NewLogin_()" id="NewLoginMangadex"></button>
+            <button onclick="StartProcess_()" id="StartProcessMangadex"></button>
+        </div>
 
-<body>
+        <!-- Frame 2 -->
+        <div id="frame2">
+            <button onclick="OpenFile_1()" id="OpenFile1"></button>
+            <button onclick="OpenFolder_1()" id="OpenFolder1"></button>
+            <button onclick="OpenFolder_2()" id="OpenFolder2"></button>
+            <button onclick="CleanFolder_2()" id="CleanFolder2"></button>
+        </div>
 
-  <div id="videoContainer">
-    <canvas id="videoCanvas" autoplay muted loop></canvas>
-  </div>
+        <a id="github-button" href="https://github.com/OneDefauter/mupl/blob/main/readme.md" target="_blank">GitHub</a>
 
-  <!-- Frame 1 -->
-  <div id="frame1">
-    <button onclick="NewLogin_()" id="NewLoginMangadex"></button>
-    <button onclick="StartProcess_()" id="StartProcessMangadex"></button>
-  </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var video = document.createElement('video');
+                video.autoplay = true;
+                video.muted = true;
+                video.loop = true;
+            
+                var canvas = document.getElementById('videoCanvas');
+                var ctx = canvas.getContext('2d');
+            
+                video.src = "{{ url_for('static', filename='background.mp4') }}";
+            
+                video.addEventListener('loadeddata', function () {
+                  canvas.width = video.videoWidth;
+                  canvas.height = video.videoHeight;
+            
+                  video.play();
+                  drawFrame();
+                });
+            
+                function drawFrame() {
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  requestAnimationFrame(drawFrame);
+                }
+            });
 
-  <!-- Frame 2 -->
-  <div id="frame2">
-    <button onclick="OpenFile_1()" id="OpenFile1"></button>
-    <button onclick="OpenFolder_1()" id="OpenFolder1"></button>
-    <button onclick="OpenFolder_2()" id="OpenFolder2"></button>
-    <button onclick="CleanFolder_2()" id="CleanFolder2"></button>
-  </div>
-
-  <a id="github-button" href="https://github.com/OneDefauter/mupl/blob/main/readme.md" target="_blank">GitHub</a>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var video = document.createElement('video');
-      video.autoplay = true;
-      video.muted = true;
-      video.loop = true;
-  
-      var canvas = document.getElementById('videoCanvas');
-      var ctx = canvas.getContext('2d');
-  
-      video.src = "{{ url_for('static', filename='background.mp4') }}";
-  
-      video.addEventListener('loadeddata', function () {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-  
-        video.play();
-        drawFrame();
-      });
-  
-      function drawFrame() {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        requestAnimationFrame(drawFrame);
-      }
-    });
-
-      function NewLogin_() {
-        window.location.href = '{{url_for('new_login')}}'
-      }
-
-      function StartProcess_() {
-        fetch('/start_process', {
-            method: 'POST',
-        })
-        .catch(error => console.error('Error:', error));
-      }
-
-      function OpenFile_1() {
-        fetch('/open_file', {
-            method: 'POST',
-        })
-        .catch(error => console.error('Error:', error));
-      }
-
-      function OpenFolder_1() {
-        fetch('/open_folder1', {
-            method: 'POST',
-        })
-        .catch(error => console.error('Error:', error));
-      }
-
-      function OpenFolder_2() {
-        fetch('/open_folder2', {
-            method: 'POST',
-        })
-        .catch(error => console.error('Error:', error));
-      }
-
-      function CleanFolder_2() {
-        fetch('/clear_folder1', {
-            method: 'POST',
-        })
-        .catch(error => console.error('Error:', error));
-      }
-    
-
-    const languageCode = localStorage.getItem('selectedLanguage') || 'en';
-
-    fetch(`static/${languageCode}.json`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Language file not found');
+            function NewLogin_() {
+                window.location.href = '{{url_for('new_login')}}'
             }
-            return response.json();
-        })
-        .then(translations => {
-            document.getElementById('NewLoginMangadex').textContent = translations.new_login_mangadex;
-            document.getElementById('StartProcessMangadex').textContent = translations.start_process_mangadex;
-            document.getElementById('OpenFile1').textContent = translations.open_map_id;
-            document.getElementById('OpenFolder1').textContent = translations.open_folder_upload;
-            document.getElementById('OpenFolder2').textContent = translations.open_folder_uploaded;
-            document.getElementById('CleanFolder2').textContent = translations.clean_folder_uploaded;
-        })
-        .catch(error => {
-            fetch('static/en.json')
-                .then(response => response.json())
-                .then(translations => {
-                    document.getElementById('NewLoginMangadex').textContent = translations.new_login_mangadex;
-                    document.getElementById('StartProcessMangadex').textContent = translations.start_process_mangadex;
-                    document.getElementById('OpenFile1').textContent = translations.open_map_id;
-                    document.getElementById('OpenFolder1').textContent = translations.open_folder_upload;
-                    document.getElementById('OpenFolder2').textContent = translations.open_folder_uploaded;
-                    document.getElementById('CleanFolder2').textContent = translations.clean_folder_uploaded;
+        
+            function StartProcess_() {
+                fetch('/start_process', {
+                    method: 'POST',
                 })
                 .catch(error => console.error('Error:', error));
-        });
-  </script>
-  
-</body>
+            }
+        
+            function OpenFile_1() {
+                fetch('/open_file', {
+                    method: 'POST',
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        
+            function OpenFolder_1() {
+                fetch('/open_folder1', {
+                    method: 'POST',
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        
+            function OpenFolder_2() {
+                fetch('/open_folder2', {
+                    method: 'POST',
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        
+            function CleanFolder_2() {
+                fetch('/clear_folder1', {
+                    method: 'POST',
+                })
+                .catch(error => console.error('Error:', error));
+            }
 
+            function getLanguageDefault() {
+                fetch('/get_language')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch default language');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const languageCode = data.language_default || 'en'; // Se não houver idioma padrão, use 'en' como padrão
+                        fetch(`static/${languageCode}.json`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Language file not found');
+                                }
+                                return response.json();
+                            })
+                            .then(translations => {
+                                document.getElementById('NewLoginMangadex').textContent = translations.new_login_mangadex;
+                                document.getElementById('StartProcessMangadex').textContent = translations.start_process_mangadex;
+
+                                document.getElementById('OpenFile1').textContent = translations.open_map_id;
+                                document.getElementById('OpenFolder1').textContent = translations.open_folder_upload;
+                                document.getElementById('OpenFolder2').textContent = translations.open_folder_uploaded;
+                                document.getElementById('CleanFolder2').textContent = translations.clean_folder_uploaded;
+                            })
+                            .catch(error => console.error('Error:', error));
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            document.addEventListener('DOMContentLoaded', getLanguageDefault);
+        </script>
+    </body>
 </html>

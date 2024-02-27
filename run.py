@@ -171,6 +171,12 @@ def new_login():
 def main_setup():
     return render_template('main.html')
 
+@app.route('/get_language', methods=['GET'])
+def get_language():
+    config = load_config()
+    language_default = config['options']['language_default']
+    return jsonify({'language_default': language_default})
+
 @app.route('/open_folder1', methods=['POST'])
 def open_folder1():
     uploads_folder = os.path.join(folder_executed, 'to_upload')
