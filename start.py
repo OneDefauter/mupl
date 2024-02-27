@@ -2,7 +2,6 @@ import os
 import subprocess
 from io import BytesIO
 from zipfile import ZipFile
-from packaging import version
 
 
 namespace = "OneDefauter"
@@ -86,4 +85,5 @@ def download_and_execute():
 if __name__ == "__main__":
     install_modules()
     import requests
+    from packaging import version
     download_and_execute()

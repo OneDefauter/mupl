@@ -12,3 +12,4 @@ venv/
 config.json
 .github/*
 .vscode/*
+main3.py
