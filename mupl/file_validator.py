@@ -288,7 +288,7 @@ class FileProcesser:
                 chapter_number = parts[4] # Chapter
                 
                 # Check if the value is "0000", if so, it's a oneshot
-                if chapter_number == "0000":
+                if chapter_number.count("0") >= 4:
                     chapter_number = None
                     self.oneshot = True
                 

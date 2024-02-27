@@ -5,72 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, Indexial-scale=1.0">
     <title>MangaDex</title>
-    <link rel="icon" href="static/icon.ico" type="image/png">
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        #videoContainer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: -1;
-        }
-
-        video {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-            filter: blur(5px);
-            transform: scale(1.1);
-        }
-
-        .language-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px;
-            justify-content: center;
-        }
-
-        .language-button {
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        .language-button:hover {
-            background-color: #2980b9;
-        }
-    </style>
+    <link rel="icon" href="https://mangadex.org/img/avatar.png" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
-
 <body>
-
-    <!-- Container para o vídeo de fundo -->
     <div id="videoContainer">
-        <video autoplay muted loop>
-            <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+        <canvas id="videoCanvas" autoplay muted loop></canvas>
     </div>
 
-    <!-- Botões de idioma -->
     <div class="language-buttons">
         <button class="language-button" onclick="changeLanguage('ar')" data-language="ar">Arabic</button>
         <button class="language-button" onclick="changeLanguage('ita')" data-language="ita">Italian</button>
@@ -110,11 +52,34 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var video = document.createElement('video');
+            video.autoplay = true;
+            video.muted = true;
+            video.loop = true;
+        
+            var canvas = document.getElementById('videoCanvas');
+            var ctx = canvas.getContext('2d');
+        
+            video.src = "{{ url_for('static', filename='background.mp4') }}";
+        
+            video.addEventListener('loadeddata', function () {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+        
+              video.play();
+              drawFrame();
+            });
+        
+            function drawFrame() {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              requestAnimationFrame(drawFrame);
+            }
+        });
+        
         function changeLanguage(languageCode) {
-            // Armazenar a linguagem selecionada no localStorage
             localStorage.setItem('selectedLanguage', languageCode);
 
-            // Redirecionar para a próxima página (config.html)
             window.location.href = '{{ url_for('login') }}';
         }
     </script>

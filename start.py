@@ -1,6 +1,13 @@
 import os
-import tempfile
 import subprocess
+from io import BytesIO
+from zipfile import ZipFile
+from packaging import version
+
+
+namespace = "OneDefauter"
+__version__ = "2.0.1"
+
 
 def install_modules():
     required_modules = [
@@ -22,44 +29,58 @@ def install_modules():
         except ImportError:
             subprocess.run(['pip', 'install', module])
 
-    # Clear the terminal according to the operating system
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def download_and_execute():
-    main_py_url = 'https://raw.githubusercontent.com/OneDefauter/mupl/main/main.py'
-    main_py_filename = 'main_mupl.py'
-    temp_dir = tempfile.gettempdir()
-    main_py_path = os.path.join(temp_dir, main_py_filename)
+    temp_folder = os.environ.get('TEMP', '') if os.name == 'nt' else os.environ.get('TMPDIR', '')
+    app_folder = os.path.join(temp_folder, "MangaDex Uploader (APP)")
+    path_file = os.path.join(temp_folder, "MangaDex Uploader (APP)", "run.py")
     folder_executed = os.getcwd()
+    os.chdir(app_folder)
 
-    # Download the main_mupl.py file
-    try:
-        response = requests.get(main_py_url)
-        if response.status_code == 200:
-            with open(main_py_path, 'wb') as f:
-                f.write(response.content)
+    os.makedirs(app_folder, exist_ok=True)
+    os.makedirs(os.path.join(app_folder, "to_upload"), exist_ok=True)
+    os.makedirs(os.path.join(app_folder, "uploaded"), exist_ok=True)
+    
+    remote_release = requests.get(f"https://api.github.com/repos/{namespace}/mupl/releases/latest")
+    local_version = version.parse(__version__)
+    
+    if remote_release.ok:
+        remote_release_json = remote_release.json()
+        remote_version = version.parse(remote_release_json["tag_name"])
+        zip_resp = requests.get(remote_release_json["zipball_url"])
+        if zip_resp.ok:
+            myzip = ZipFile(BytesIO(zip_resp.content))
+            zip_root = [z for z in myzip.infolist() if z.is_dir()][0].filename
+            zip_files = [z for z in myzip.infolist() if not z.is_dir()]
+        
+        if not os.path.exists(path_file):
+            for fileinfo in zip_files:
+                filename = app_folder.joinpath(
+                    fileinfo.filename.replace(zip_root, "")
+                )
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                file_data = myzip.read(fileinfo)
 
-            command = ['python', main_py_path, folder_executed] if os.name == 'nt' else ['python3', main_py_path, folder_executed]
-
-            # Execute the subprocess correctly
-            subprocess.run(command)
-            
+                with open(filename, "wb") as fopen:
+                    fopen.write(file_data)
         else:
-            if os.path.exists(main_py_path):
-                command = ['python', main_py_path, folder_executed] if os.name == 'nt' else ['python3', main_py_path, folder_executed]
+            if remote_version > local_version:
+                print(f"MangaDex Uploader (APP) is up to date.\nVersion: {remote_version}\nLocal: {local_version}")
+                for fileinfo in zip_files:
+                    filename = app_folder.joinpath(
+                        fileinfo.filename.replace(zip_root, "")
+                    )
+                    filename.parent.mkdir(parents=True, exist_ok=True)
+                    file_data = myzip.read(fileinfo)
 
-                # Execute the subprocess correctly
-                subprocess.run(command)
+                    with open(filename, "wb") as fopen:
+                        fopen.write(file_data)
+    
+    if os.path.exists(path_file):
+        command = ['python', path_file, folder_executed] if os.name == 'nt' else ['python3', path_file, folder_executed]
 
-    except Exception as e:
-        if os.path.exists(main_py_path):
-            command = ['python', main_py_path, folder_executed] if os.name == 'nt' else ['python3', main_py_path, folder_executed]
-
-            # Execute the subprocess correctly
-            subprocess.run(command)
-            
-        else:
-            print(f"Error during download or execution: {e}")
+        subprocess.run(command)
 
 
 if __name__ == "__main__":

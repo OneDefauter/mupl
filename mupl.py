@@ -272,8 +272,8 @@ def main(threaded: "bool" = True):
 
     for index, file_name_obj in enumerate(zips_to_upload, start=1):
         try:
-            print(f"\n\n{translate_message['uploading_draft']} {str(file_name_obj)}\n{'-'*40}")
-
+            print(f"\n\n{translate_message['uploading_draft']} {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}\n{'-'*60}")
+            
             uploader_process = ChapterUploader(
                 http_client, file_name_obj, names_to_ids, failed_uploads, threaded
             )
@@ -286,12 +286,12 @@ def main(threaded: "bool" = True):
             # Delete to save memory on large amounts of uploads
             del uploader_process
 
-            print(f"{'-'*10}\n{translate_message['finish_upload']} {str(file_name_obj)}\n{'-'*10}")
+            print(f"{'-'*60}\n{translate_message['finish_upload']} {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}\n{'-'*60}")
             logger.debug("Sleeping between zip upload.")
             time.sleep(RATELIMIT_TIME * 2)
         except KeyboardInterrupt:
             logger.warning(
-                f"Keyboard Interrupt detected during upload of {str(file_name_obj)}"
+                f"Keyboard Interrupt detected during upload of {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}"
             )
             print(translate_message['keyboard_interrupt_exit'])
             try:
