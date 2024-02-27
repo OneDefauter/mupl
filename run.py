@@ -59,8 +59,14 @@ def save_config(config):
 
 def create_map():
     data = {
-        "manga": {},
-        "group": {}
+        "manga": {
+            "test1": "f9c33607-9180-4ba6-b85c-e4b5faee7192",
+            "test2": "f9c33607-9180-4ba6-b85c-e4b5faee7192"
+        },
+        "group": {
+            "test1": "6410209a-0f39-4f51-a139-bc559ad61a4f",
+            "test2": "6410209a-0f39-4f51-a139-bc559ad61a4f"
+        }
     }
     
     with open(map_path_file, 'w', encoding="utf-8") as arquivo:
