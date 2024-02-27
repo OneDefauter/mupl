@@ -5,8 +5,6 @@ from zipfile import ZipFile
 
 
 namespace = "OneDefauter"
-__version__ = "2.0.1"
-
 
 def install_modules():
     required_modules = [
@@ -41,6 +39,14 @@ def download_and_execute():
     os.makedirs(os.path.join(app_folder, "uploaded"), exist_ok=True)
     os.chdir(app_folder)
     
+    if os.path.exists(os.path.join(app_folder, "__init__.py")):
+        with open(os.path.join(app_folder, "__init__.py"), 'r') as file:
+            for line in file:
+                if line.startswith('__version__'):
+                    __version__ = line.split('=')[1].strip().strip('"\'')
+    else:
+        __version__ = "2.0.1"
+
     remote_release = requests.get(f"https://api.github.com/repos/{namespace}/mupl/releases/latest")
     local_version = version.parse(__version__)
     
