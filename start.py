@@ -35,11 +35,11 @@ def download_and_execute():
     app_folder = os.path.join(temp_folder, "MangaDex Uploader (APP)")
     path_file = os.path.join(temp_folder, "MangaDex Uploader (APP)", "run.py")
     folder_executed = os.getcwd()
-    os.chdir(app_folder)
-
+    
     os.makedirs(app_folder, exist_ok=True)
     os.makedirs(os.path.join(app_folder, "to_upload"), exist_ok=True)
     os.makedirs(os.path.join(app_folder, "uploaded"), exist_ok=True)
+    os.chdir(app_folder)
     
     remote_release = requests.get(f"https://api.github.com/repos/{namespace}/mupl/releases/latest")
     local_version = version.parse(__version__)
@@ -55,10 +55,9 @@ def download_and_execute():
         
         if not os.path.exists(path_file):
             for fileinfo in zip_files:
-                filename = app_folder.joinpath(
-                    fileinfo.filename.replace(zip_root, "")
-                )
-                filename.parent.mkdir(parents=True, exist_ok=True)
+                filename = os.path.join(app_folder, fileinfo.filename.replace(zip_root, ""))
+                dirname = os.path.dirname(filename)
+                os.makedirs(dirname, exist_ok=True)
                 file_data = myzip.read(fileinfo)
 
                 with open(filename, "wb") as fopen:
@@ -67,10 +66,9 @@ def download_and_execute():
             if remote_version > local_version:
                 print(f"MangaDex Uploader (APP) is up to date.\nVersion: {remote_version}\nLocal: {local_version}")
                 for fileinfo in zip_files:
-                    filename = app_folder.joinpath(
-                        fileinfo.filename.replace(zip_root, "")
-                    )
-                    filename.parent.mkdir(parents=True, exist_ok=True)
+                    filename = os.path.join(app_folder, fileinfo.filename.replace(zip_root, ""))
+                    dirname = os.path.dirname(filename)
+                    os.makedirs(dirname, exist_ok=True)
                     file_data = myzip.read(fileinfo)
 
                     with open(filename, "wb") as fopen:
