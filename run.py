@@ -13,7 +13,7 @@ except:
 
 app = Flask(__name__)
 
-temp_folder = os.environ['TEMP']
+temp_folder = os.environ.get('TEMP', '') if os.name == 'nt' else os.environ.get('TMPDIR', '')
 app_folder = os.path.join(temp_folder, "MangaDex Uploader (APP)")
 mupl_app = os.path.join(app_folder, "mupl.py")
 config_path = os.path.join(app_folder, 'config.json')
@@ -57,6 +57,14 @@ def save_config(config):
     with open('config.json', 'w', encoding='utf-8') as file:
         json.dump(config, file, indent=4, ensure_ascii=False)@app.route("/")
 
+def create_map():
+    data = {
+        "manga": {},
+        "group": {}
+    }
+    
+    with open(map_path_file, 'w', encoding="utf-8") as arquivo:
+        json.dump(data, arquivo, indent=4)
 
 @app.route('/')
 def index():
@@ -118,6 +126,9 @@ def index():
             json.dump(config, file, indent=4)
 
     check_config_paths()
+    
+    if not os.path.exists(map_path_file):
+        create_map()
     
     try:
         with open('config.json', 'r', encoding='utf-8') as file:
