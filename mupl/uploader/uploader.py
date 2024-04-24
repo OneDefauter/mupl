@@ -92,8 +92,8 @@ class ChapterUploader(ChapterUploaderHandler):
             chapter_title = None
             
             language = parts[1] # Language
-            manga_series = parts[2] # Project name
-            groups = parts[3] # Group scan
+            groups = parts[2] # Group scan
+            manga_series = parts[3] # Project name
             
             def volume_number_or_chapter_number(parts):
                 volume_number = parts[4][1:].strip() # Volume (without 'v')
@@ -234,7 +234,7 @@ class ChapterUploader(ChapterUploaderHandler):
         """Process the zip for uploading."""
         logger.info(f"Uploading chapter: {repr(self.file_name_obj)}")
         print(
-            "Manga id: {manga_series}\n"
+            "Manga ID: {manga_series}\n"
             "{chapter_number_manga}: {chapter_number}\n"
             "{volume_number_manga}: {volume_number}\n"
             "{chapter_title_manga}: {chapter_title}\n"

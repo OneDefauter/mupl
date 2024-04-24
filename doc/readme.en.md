@@ -34,8 +34,8 @@ Read this in other languages:
 
 #### Folder Format
 - `Language`
-  - `Work`
-    - `Group`
+  - `Group`
+    - `Work`
       - `Volume`
         - `Chapter`
           - `Title {data}`

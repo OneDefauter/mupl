@@ -5,6 +5,7 @@
     "finish_upload": "Finished Uploading",
     "keyboard_interrupt_exit": "Keyboard interrupt detected, exiting.",
     "failed_uploads": "Failed uploads:",
+    "failed_upload": "Failed upload:",
     "metod_folder": "Folder",
     "metod_archive": "Archive",
 

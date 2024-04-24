@@ -34,8 +34,8 @@ Leia isso em outros idiomas:
 
 #### Formato em Pasta
 - `Linguagem`
-  - `Obra`
-    - `Grupo`
+  - `Grupo`
+    - `Obra`
       - `Volume`
         - `Capítulo`
           - `Título {data}`

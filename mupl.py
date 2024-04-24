@@ -2,12 +2,15 @@ import os
 import sys
 import json
 import time
+import locale
 import shutil
 import asyncio
 import logging
 import argparse
 from PIL import Image
 from pathlib import Path
+from datetime import datetime
+from colorama import Fore, Style
 from typing import Optional, List
 
 import natsort
@@ -24,6 +27,12 @@ height_max = 10000
 
 # Number of desired parts
 num_parts = 5
+
+default_locale = locale.getdefaultlocale()
+if default_locale[0]:
+    locale.setlocale(locale.LC_TIME, default_locale[0])
+else:
+    locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
 
 def cup_images(image, output_folder, path, allow_ext):
     os.makedirs(output_folder, exist_ok=True)
@@ -102,16 +111,16 @@ def get_zips_to_upload(names_to_ids: "dict", allow_ext = ['.png', '.jpg', '.jpeg
         if archive.name.startswith('[') and archive.name.endswith(']'):
             if archive.is_dir():
                 
-                # Name project [2]
-                for title_tag in archive.iterdir():
-                    if title_tag.is_dir():
+                # Group scan [2]
+                for group_tag in archive.iterdir():
+                    if group_tag.is_dir():
                         
-                        # Group scan [3]
-                        for group_tag in title_tag.iterdir():
-                            if group_tag.is_dir():
+                        # Name project [3]
+                        for title_tag in group_tag.iterdir():
+                            if title_tag.is_dir():
                                 
                                 # Volume [4]
-                                for volume_tag in group_tag.iterdir():
+                                for volume_tag in title_tag.iterdir():
                                     if not volume_tag.name.startswith('v'):
                                         continue
                                     
@@ -247,11 +256,7 @@ def get_zips_to_upload(names_to_ids: "dict", allow_ext = ['.png', '.jpg', '.jpeg
 def open_manga_series_map(files_path: "Path") -> "dict":
     """Get the manga-name-to-id map."""
     try:
-        with open(
-            files_path.joinpath(config["paths"]["name_id_map_file"]),
-            "r",
-            encoding="utf-8",
-        ) as json_file:
+        with open(os.path.join(Path.home(), "MangaDex Uploader (APP)", "name_id_map.json"), "r", encoding="utf-8",) as json_file:
             names_to_ids = json.load(json_file)
     except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
         logger.exception("Please check your name-to-id file.")
@@ -272,7 +277,7 @@ def main(threaded: "bool" = True):
 
     for index, file_name_obj in enumerate(zips_to_upload, start=1):
         try:
-            print(f"\n\n{translate_message['uploading_draft']} {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}\n{'-'*60}")
+            print(f"\n\n[{datetime.now().strftime('%c')}] {translate_message['uploading_draft']} {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}\n{'-'*100}")
             
             uploader_process = ChapterUploader(
                 http_client, file_name_obj, names_to_ids, failed_uploads, threaded
@@ -286,7 +291,7 @@ def main(threaded: "bool" = True):
             # Delete to save memory on large amounts of uploads
             del uploader_process
 
-            print(f"{'-'*60}\n{translate_message['finish_upload']} {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}\n{'-'*60}")
+            print(f"{'-'*100}\n{Fore.GREEN}[{datetime.now().strftime('%c')}] {translate_message['finish_upload']} {str(file_name_obj.manga_series)} - {str(file_name_obj.chapter_number)}{Style.RESET_ALL}\n{'-'*100}")
             logger.debug("Sleeping between zip upload.")
             time.sleep(RATELIMIT_TIME * 2)
         except KeyboardInterrupt:
@@ -309,7 +314,7 @@ def main(threaded: "bool" = True):
 
     if failed_uploads:
         logger.info(f"Failed uploads: {failed_uploads}")
-        print(translate_message['failed_uploads'])
+        print(translate_message['failed_uploads'] if len(failed_uploads) == 1 else translate_message['failed_upload'])
         for fail in failed_uploads:
             prefix = translate_message['metod_folder'] if fail.is_dir() else translate_message['metod_archive']
             print("{}: {}".format(prefix, fail.name))

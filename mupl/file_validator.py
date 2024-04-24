@@ -250,6 +250,9 @@ class FileProcesser:
         """Extract the respective chapter data from the file name."""
         
         def match_file(parts):
+            if len(parts) < 9:
+                return
+            
             # Retrieve the parts from "to_upload" and remove everything before "to_upload"
             index_to_upload = parts.index('to_upload')
             parts = parts[index_to_upload:]
@@ -264,8 +267,8 @@ class FileProcesser:
             publish_date = None
 
             language = parts[1] # Language
-            manga_series = parts[2] # Project name
-            groups = parts[3] # Group scan
+            groups = parts[2] # Group scan
+            manga_series = parts[3] # Project name
             
             def volume_number_or_chapter_number(parts):
                 volume_number = parts[4][1:].strip() # Volume (without 'v')

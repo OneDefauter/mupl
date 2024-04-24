@@ -58,11 +58,19 @@ class ChapterUploaderHandler:
             return
 
         # Some images returned errors
-        uploaded_image_data = image_upload_response.data
-        successful_upload_data = uploaded_image_data["data"]
-        if uploaded_image_data["errors"] or uploaded_image_data["result"] == "error":
-            logger.warning(f"Some images errored out.")
-            return
+        try:
+            uploaded_image_data = image_upload_response.data
+            successful_upload_data = uploaded_image_data["data"]
+            if uploaded_image_data["errors"] or uploaded_image_data["result"] == "error":
+                logger.warning(f"Some images errored out.")
+                return
+        except:
+            if uploaded_image_data["errors"] or uploaded_image_data["result"] == "error":
+                logger.warning(f"Some images errored out.")
+                return
+            else:
+                logger.warning(f"Some images errored out.")
+                return
         return successful_upload_data
 
     def _begin_upload_session(self, payload: dict):

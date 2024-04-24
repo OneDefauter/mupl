@@ -1,11 +1,11 @@
+import os
 import json
 import logging
 from pathlib import Path
 
 logger = logging.getLogger("mupl")
 
-
-root_path = Path(".")
+root_path = Path(os.path.join(Path.home(), 'MangaDex Uploader (APP)'))
 
 
 def open_defaults_file(defaults_path: "Path") -> "dict":
@@ -47,7 +47,7 @@ def open_config_file(root_path: "Path") -> "dict":
     defaults_path = root_path.joinpath("mupl", "utils", "defaults").with_suffix(".json")
     defaults_file = open_defaults_file(defaults_path)
 
-    if config_file_path.exists():
+    if os.path.exists(config_file_path):
         config = json.loads(config_file_path.read_bytes())
     else:
         logger.critical("Config file not found, exiting.")
@@ -58,7 +58,7 @@ def open_config_file(root_path: "Path") -> "dict":
 
 
 def load_language(lang):
-    defaults_path = root_path.joinpath("mupl", "loc", lang).with_suffix(".json")
+    defaults_path = Path(".").joinpath("mupl", "loc", lang).with_suffix(".json")
     with open(
             defaults_path,
             "r",

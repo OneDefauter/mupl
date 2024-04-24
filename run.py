@@ -15,16 +15,22 @@ app = Flask(__name__)
 
 temp_folder = os.environ.get('TEMP', '') if os.name == 'nt' else os.environ.get('TMPDIR', '')
 app_folder = os.path.join(temp_folder, "MangaDex Uploader (APP)")
+path_user = os.path.expanduser('~')
 mupl_app = os.path.join(app_folder, "mupl.py")
 config_path = os.path.join(app_folder, 'config.json')
-map_path_file = os.path.join(app_folder, 'name_id_map.json')
+config_user = os.path.join(path_user, 'MangaDex Uploader (APP)')
+config_path_user = os.path.join(config_user, 'config.json')
+map_path_file = os.path.join(config_user, 'name_id_map.json')
+
+uploads_folder = os.path.join(folder_executed, 'to_upload')
+uploaded_files = os.path.join(folder_executed, 'uploaded')
 
 default_url = 'http://127.0.0.1:5000'
 
 
-def load_config():
+def load_config(path):
     try:
-        with open('config.json', 'r', encoding='utf-8') as file:
+        with open(path, 'r', encoding='utf-8') as file:
             return json.load(file)
     except FileNotFoundError:
         return {
@@ -44,17 +50,17 @@ def load_config():
                 "client_secret": None
             },
             "paths": {
-                "name_id_map_file": "name_id_map.json",
-                "uploads_folder": "to_upload",
-                "uploaded_files": "uploaded",
+                "name_id_map_file": map_path_file,
+                "uploads_folder": uploads_folder,
+                "uploaded_files": uploaded_files,
                 "mangadex_api_url": "https://api.mangadex.org",
                 "mangadex_auth_url": "https://auth.mangadex.org/realms/mangadex/protocol/openid-connect",
                 "mdauth_path": ".mdauth"
             }
         }
 
-def save_config(config):
-    with open('config.json', 'w', encoding='utf-8') as file:
+def save_config(config, path):
+    with open(path, 'w', encoding='utf-8') as file:
         json.dump(config, file, indent=4, ensure_ascii=False)@app.route("/")
 
 def create_map():
@@ -74,7 +80,7 @@ def create_map():
 
 @app.route('/')
 def index():
-    def create_config_file(uploads_folder, uploaded_files):
+    def create_config_file():
         config_structure = {
             "options": {
                 "number_of_images_upload": 10,
@@ -92,7 +98,7 @@ def index():
                 "client_secret": None
             },
             "paths": {
-                "name_id_map_file": "name_id_map.json",
+                "name_id_map_file": map_path_file,
                 "uploads_folder": uploads_folder,
                 "uploaded_files": uploaded_files,
                 "mangadex_api_url": "https://api.mangadex.org",
@@ -102,34 +108,43 @@ def index():
         }
 
         # Create the config.json file
-        with open(config_path, 'w', encoding='utf-8') as file:
+        with open(config_path_user, 'w', encoding='utf-8') as file:
             json.dump(config_structure, file, indent=4)
 
     def check_config_paths():
         uploads_folder = os.path.join(folder_executed, 'to_upload')
         uploaded_files = os.path.join(folder_executed, 'uploaded')
         
+        os.makedirs(config_user, exist_ok=True)
         os.makedirs(uploads_folder, exist_ok=True)
         os.makedirs(uploaded_files, exist_ok=True)
         
         if not os.path.exists(config_path):
-            create_config_file(uploads_folder, uploaded_files)
+            if not os.path.exists(config_path_user):
+                create_config_file()
+                return render_template('index.html')
 
-        with open(config_path, 'r', encoding='utf-8') as file:
-            config = json.load(file)
+        def changes(path):
+            with open(path, 'r', encoding='utf-8') as file:
+                config = json.load(file)
 
-            if config['paths']['uploads_folder'] != uploads_folder:
-                config['paths']['uploads_folder'] = uploads_folder
+                if config['paths']['uploads_folder'] != uploads_folder:
+                    config['paths']['uploads_folder'] = uploads_folder
 
-            if config['paths']['uploaded_files'] != uploaded_files:
-                config['paths']['uploaded_files'] = uploaded_files
+                if config['paths']['uploaded_files'] != uploaded_files:
+                    config['paths']['uploaded_files'] = uploaded_files
 
-            config['paths']['uploads_folder'] = os.path.abspath(config['paths']['uploads_folder'])
-            config['paths']['uploaded_files'] = os.path.abspath(config['paths']['uploaded_files'])
+                config['paths']['uploads_folder'] = os.path.abspath(config['paths']['uploads_folder'])
+                config['paths']['uploaded_files'] = os.path.abspath(config['paths']['uploaded_files'])
 
-        # Update the config.json file if there are modifications
-        with open(config_path, 'w', encoding='utf-8') as file:
-            json.dump(config, file, indent=4)
+            # Update the config.json file if there are modifications
+            with open(path, 'w', encoding='utf-8') as file:
+                json.dump(config, file, indent=4)
+            
+        if os.path.exists(config_path):
+            changes(config_path)
+        else:
+            changes(config_path_user)
 
     check_config_paths()
     
@@ -137,7 +152,7 @@ def index():
         create_map()
     
     try:
-        with open('config.json', 'r', encoding='utf-8') as file:
+        with open(config_path if os.path.exists(config_path) else config_path_user, 'r', encoding='utf-8') as file:
             config = json.load(file)
             if 'credentials' in config and all(config['credentials'].values()):
                 return main_setup()
@@ -158,12 +173,12 @@ def login_credential():
         if not all(field in credentials for field in required_fields):
             return jsonify({'error': 'Por favor, forneça todas as credenciais necessárias.'}), 400
 
-        config = load_config()
+        config = load_config(config_path if os.path.exists(config_path) else config_path_user)
 
         config['credentials'] = {key: value for key, value in credentials.items() if key != 'languageCode'}
         config['options']['language_default'] = credentials['languageCode']
 
-        save_config(config)
+        save_config(config, config_path if os.path.exists(config_path) else config_path_user)
         return '', 200
         
     except Exception as e:
@@ -179,7 +194,7 @@ def main_setup():
 
 @app.route('/get_language', methods=['GET'])
 def get_language():
-    config = load_config()
+    config = load_config(config_path if os.path.exists(config_path) else config_path_user)
     language_default = config['options']['language_default']
     return jsonify({'language_default': language_default})
 

@@ -4,7 +4,8 @@
     "uploading_draft": "Enviando",
     "finish_upload": "Upload Concluído",
     "keyboard_interrupt_exit": "Detectado interrupção do teclado, encerrando.",
-    "failed_uploads": "Falhas nos uploads:",
+    "failed_uploads": "Falha nos uploads:",
+    "failed_upload": "Falha no upload:",
     "metod_folder": "Pasta",
     "metod_archive": "Arquivo Compactado",
 
